@@ -28,7 +28,7 @@ func LoadYAML(in []byte, out interface{}, schema []byte) error {
 			return err
 		}
 		if !res.Valid() {
-			return formatSchemaErrors(res)
+			return SchemaValidationError{Result: res}
 		}
 	}
 

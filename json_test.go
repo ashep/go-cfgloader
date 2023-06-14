@@ -9,17 +9,17 @@ import (
 	"github.com/ashep/go-cfgloader"
 )
 
-func TestLoadYAML(tt *testing.T) {
-	tt.Run("InvalidInYAML", func(t *testing.T) {
+func TestLoadJSON(tt *testing.T) {
+	tt.Run("InvalidInJSON", func(t *testing.T) {
 		out := outStruct{}
-		err := cfgloader.LoadYAML([]byte("foo"), &out, nil)
+		err := cfgloader.LoadJSON([]byte("{]"), &out, nil)
 
-		assert.EqualError(t, err, "yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into cfgloader_test.outStruct")
+		assert.EqualError(t, err, "invalid character ']' looking for beginning of object key string")
 	})
 
 	tt.Run("InvalidSchema", func(t *testing.T) {
 		out := outStruct{}
-		err := cfgloader.LoadYAML([]byte("foo: bar"), &out, []byte(`{]`))
+		err := cfgloader.LoadJSON([]byte(`{"foo":"bar"}`), &out, []byte(`{]`))
 
 		assert.NotErrorIs(t, err, cfgloader.SchemaValidationError{})
 		assert.EqualError(t, err, "invalid character ']' looking for beginning of object key string")
@@ -27,7 +27,7 @@ func TestLoadYAML(tt *testing.T) {
 
 	tt.Run("SchemaCheckFailed", func(t *testing.T) {
 		out := outStruct{}
-		err := cfgloader.LoadYAML([]byte("foo: bar"), &out, testSchema)
+		err := cfgloader.LoadJSON([]byte(`{"foo":"bar","bar":""}`), &out, testSchema)
 
 		assert.ErrorIs(t, err, cfgloader.SchemaValidationError{})
 		assert.EqualError(t, err, "bar: String length must be greater than or equal to 1; foo: String length must be less than or equal to 2")
@@ -35,7 +35,7 @@ func TestLoadYAML(tt *testing.T) {
 
 	tt.Run("OkEmptySchema", func(t *testing.T) {
 		out := outStruct{}
-		err := cfgloader.LoadYAML([]byte("foo: bar"), &out, nil)
+		err := cfgloader.LoadJSON([]byte(`{"foo":"bar","bar":""}`), &out, nil)
 
 		require.NoError(t, err)
 		assert.Equal(t, "bar", out.Foo)
@@ -44,22 +44,21 @@ func TestLoadYAML(tt *testing.T) {
 
 	tt.Run("Ok", func(t *testing.T) {
 		out := outStruct{}
-		err := cfgloader.LoadYAML([]byte("foo: ba\nbar: baz"), &out, testSchema)
+		err := cfgloader.LoadJSON([]byte(`{"foo":"ba","bar":"baz"}`), &out, testSchema)
 
 		require.NoError(t, err)
 		assert.Equal(t, "ba", out.Foo)
 		assert.Equal(t, "baz", out.Bar)
 	})
-
 }
 
-func TestLoadYAMLFromFile(tt *testing.T) {
+func TestLoadJSONFromPath(tt *testing.T) {
 	tt.Run("OkEmptySchema", func(t *testing.T) {
-		p, err := writeTempFile(t, []byte("foo: ba\nbar: baz"), "")
+		p, err := writeTempFile(t, []byte(`{"foo":"ba","bar":"baz"}`), "")
 		require.NoError(t, err)
 
 		out := outStruct{}
-		err = cfgloader.LoadYAMLFromPath(p, &out, testSchema)
+		err = cfgloader.LoadJSONFromPath(p, &out, testSchema)
 
 		require.NoError(t, err)
 		assert.Equal(t, "ba", out.Foo)

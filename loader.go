@@ -1,17 +1,17 @@
 package cfgloader
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 )
 
-func LoadFromFile(path string, out interface{}, schema []byte) error {
+func Load(path string, out interface{}, schema []byte) error {
 	switch {
 	case strings.HasSuffix(path, ".yml"), strings.HasSuffix(path, ".yaml"):
 		return LoadYAMLFromPath(path, out, schema)
 	case strings.HasSuffix(path, ".json"):
-		return errors.New("not implemented")
+		return LoadJSONFromPath(path, out, schema)
 	}
 
-	return nil
+	return fmt.Errorf("cannot determine file format: %s", path)
 }
