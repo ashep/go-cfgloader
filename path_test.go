@@ -14,8 +14,8 @@ func TestLoadFromFile(tt *testing.T) {
 		p, err := writeTempFile(t, []byte(`{"foo":"ba","bar":"baz"}`), ".yaml")
 		require.NoError(t, err)
 
-		out := outStruct{}
-		err = cfgloader.Load(p, &out, testSchema)
+		out := cfgStruct{}
+		err = cfgloader.LoadFromPath(p, &out, testSchema)
 
 		require.NoError(t, err)
 		assert.Equal(t, "ba", out.Foo)
@@ -26,8 +26,8 @@ func TestLoadFromFile(tt *testing.T) {
 		p, err := writeTempFile(t, []byte("foo: ba\nbar: baz"), ".json")
 		require.NoError(t, err)
 
-		out := outStruct{}
-		err = cfgloader.Load(p, &out, testSchema)
+		out := cfgStruct{}
+		err = cfgloader.LoadFromPath(p, &out, testSchema)
 
 		require.EqualError(t, err, "invalid character 'o' in literal false (expecting 'a')")
 		assert.NotErrorIs(t, err, cfgloader.SchemaValidationError{})
@@ -37,8 +37,8 @@ func TestLoadFromFile(tt *testing.T) {
 		p, err := writeTempFile(t, []byte(`{"foo":"ba","bar":"baz"}`), ".json")
 		require.NoError(t, err)
 
-		out := outStruct{}
-		err = cfgloader.Load(p, &out, testSchema)
+		out := cfgStruct{}
+		err = cfgloader.LoadFromPath(p, &out, testSchema)
 
 		require.NoError(t, err)
 		assert.Equal(t, "ba", out.Foo)
@@ -49,8 +49,8 @@ func TestLoadFromFile(tt *testing.T) {
 		p, err := writeTempFile(t, []byte("foo: ba\nbar: baz"), ".yaml")
 		require.NoError(t, err)
 
-		out := outStruct{}
-		err = cfgloader.Load(p, &out, testSchema)
+		out := cfgStruct{}
+		err = cfgloader.LoadFromPath(p, &out, testSchema)
 
 		require.NoError(t, err)
 		assert.Equal(t, "ba", out.Foo)

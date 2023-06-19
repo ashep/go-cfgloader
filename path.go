@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func Load(path string, out interface{}, schema []byte) error {
+func LoadFromPath(path string, out interface{}, schema []byte) error {
 	switch {
 	case strings.HasSuffix(path, ".yml"), strings.HasSuffix(path, ".yaml"):
 		return LoadYAMLFromPath(path, out, schema)

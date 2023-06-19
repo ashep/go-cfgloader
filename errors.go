@@ -12,6 +12,10 @@ type SchemaValidationError struct {
 }
 
 func (e SchemaValidationError) Error() string {
+	if e.Result == nil {
+		return "result is nil"
+	}
+
 	r := make([]string, 0)
 	for _, v := range e.Result.Errors() {
 		r = append(r, v.String())

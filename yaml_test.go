@@ -11,14 +11,14 @@ import (
 
 func TestLoadYAML(tt *testing.T) {
 	tt.Run("InvalidInYAML", func(t *testing.T) {
-		out := outStruct{}
+		out := cfgStruct{}
 		err := cfgloader.LoadYAML([]byte("foo"), &out, nil)
 
-		assert.EqualError(t, err, "yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into cfgloader_test.outStruct")
+		assert.EqualError(t, err, "yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into cfgloader_test.cfgStruct")
 	})
 
 	tt.Run("InvalidSchema", func(t *testing.T) {
-		out := outStruct{}
+		out := cfgStruct{}
 		err := cfgloader.LoadYAML([]byte("foo: bar"), &out, []byte(`{]`))
 
 		assert.NotErrorIs(t, err, cfgloader.SchemaValidationError{})
@@ -26,7 +26,7 @@ func TestLoadYAML(tt *testing.T) {
 	})
 
 	tt.Run("SchemaCheckFailed", func(t *testing.T) {
-		out := outStruct{}
+		out := cfgStruct{}
 		err := cfgloader.LoadYAML([]byte("foo: bar"), &out, testSchema)
 
 		assert.ErrorIs(t, err, cfgloader.SchemaValidationError{})
@@ -34,7 +34,7 @@ func TestLoadYAML(tt *testing.T) {
 	})
 
 	tt.Run("OkEmptySchema", func(t *testing.T) {
-		out := outStruct{}
+		out := cfgStruct{}
 		err := cfgloader.LoadYAML([]byte("foo: bar"), &out, nil)
 
 		require.NoError(t, err)
@@ -43,12 +43,28 @@ func TestLoadYAML(tt *testing.T) {
 	})
 
 	tt.Run("Ok", func(t *testing.T) {
-		out := outStruct{}
-		err := cfgloader.LoadYAML([]byte("foo: ba\nbar: baz"), &out, testSchema)
+		out := cfgStruct{}
+		err := cfgloader.LoadYAML([]byte(`
+foo: ba
+bar: baz
+int: 123
+float: 123.456
+baz:
+  foo: baz_foo
+  bar: baz_bar
+  int: 234
+  float: 234.567
+`), &out, testSchema)
 
 		require.NoError(t, err)
 		assert.Equal(t, "ba", out.Foo)
 		assert.Equal(t, "baz", out.Bar)
+		assert.Equal(t, 123, out.Int)
+		assert.Equal(t, 123.456, out.Float)
+		assert.Equal(t, "baz_foo", out.Baz.Foo)
+		assert.Equal(t, "baz_bar", out.Baz.Bar)
+		assert.Equal(t, 234, out.Baz.Int)
+		assert.Equal(t, 234.567, out.Baz.Float)
 	})
 
 }
@@ -58,7 +74,7 @@ func TestLoadYAMLFromFile(tt *testing.T) {
 		p, err := writeTempFile(t, []byte("foo: ba\nbar: baz"), "")
 		require.NoError(t, err)
 
-		out := outStruct{}
+		out := cfgStruct{}
 		err = cfgloader.LoadYAMLFromPath(p, &out, testSchema)
 
 		require.NoError(t, err)
